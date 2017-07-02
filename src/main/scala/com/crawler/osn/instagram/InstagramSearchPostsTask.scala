@@ -89,25 +89,23 @@ case class InstagramNewGeoPostsSearchTask(query: String,
   def getPost(postId: String) = {
     val response = Http(s"https://www.instagram.com/p/$postId/?__a=1").execute().body
     val post = JSON.parse(response).asInstanceOf[BasicDBObject]
-      .get("graphql").asInstanceOf[BasicDBObject].asInstanceOf[BasicDBObject]
+      .get("graphql").asInstanceOf[BasicDBObject]
       .get("shortcode_media").asInstanceOf[BasicDBObject]
     post
   }
 
   def appendLocation(posts: Array[BasicDBObject]) = {
-    val postsIds = posts.par.map(_.getString("code")).map(getPost)
+    val postsIds = posts.par.map{p => try { getPost(p.getString("code"))} catch { case e:Exception => p }}
     postsIds.par
       .map { p =>
         try {
           val locationId = p.get("location").asInstanceOf[BasicDBObject].getString("id")
           val location = getLocation(locationId)
           p.replace("location", location)
-          p
-        } catch {
-          case _ =>
-        }
+        } catch { case _ => }
 
         p.put("key", p.getString("id"))
+        p.put("query", query)
         p.put("network", "instagram")
         p.put("date", p.get("taken_at_timestamp"))
         p.remove("taken_at_timestamp")

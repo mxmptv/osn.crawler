@@ -93,13 +93,21 @@ case class KafkaUniqueSaver(kafkaEndpoint: String, redisEndpoint: String, kafkaT
     val value = d.toJson
     logger.debug(s"Needs to save BasicDBObject data $value")
 
-    try {
+    val rsps: Long = try {
       jedis.setnx(key, "")
-      logger.debug(s"Key $key already saved to kafka")
-      jedis.expire(key, 1000)
+    } catch {
+      case e: Exception => 1L
     }
-    catch {
-      case e: Exception =>
+    rsps match {
+      case r if r <= 0 =>
+        logger.debug(s"Key $key already saved to kafka")
+        try {
+          jedis.expire(key, 60)
+        } catch {
+          case e: Exception => 0L
+        }
+
+      case r if r > 0 =>
         logger.debug(s"Needs  save $key to kafka")
         kafkaProducer.send(new ProducerRecord[String, String](kafkaTopic, value))
     }
