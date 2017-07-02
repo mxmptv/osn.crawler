@@ -42,7 +42,7 @@ object Util {
   }
 
   def getTwitterAccounts(): Array[TwitterAccount] = {
-    new File(s"resources/twitter_accounts.txt")
+    new File(s"resources/twitterAccounts")
       .listFiles()
       .flatMap(file => {
         Source.fromFile(file)
@@ -58,7 +58,7 @@ object Util {
   }
 
   def getVkAccounts(): Array[VkontakteAccount] = {
-    new File(s"resources/vk_accounts.txt")
+    new File(s"resources/vkAccounts")
       .listFiles()
       .flatMap(file => {
         Source.fromFile(file)
