@@ -1,0 +1,12 @@
+[Unit]
+Description=Crawler Master Service
+
+[Service]
+Type=forking
+WorkingDirectory=/home/nano/sncrawler/
+ExecStart=/usr/bin/java -cp target/osn.crawler-1.0-allinone.jar com.crawler.core.runners.CrawlerMaster &
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
